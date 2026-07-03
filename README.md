@@ -99,4 +99,4 @@ Settings (endpoint, API key, model) are stored in the browser's `localStorage`.
 
 ## License
 
-Private project — all rights reserved.
+[MIT](LICENSE)
