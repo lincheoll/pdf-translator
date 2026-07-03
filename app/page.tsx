@@ -1,5 +1,6 @@
 "use client";
 
+import dynamic from "next/dynamic";
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
   Upload,
@@ -12,10 +13,19 @@ import {
   ChevronDown,
   ChevronRight,
   ScanText,
+  FolderOpen,
 } from "lucide-react";
 import Settings from "@/components/Settings";
-import PdfViewer from "@/components/PdfViewer";
 import MarkdownViewer from "@/components/MarkdownViewer";
+
+const PdfViewer = dynamic(() => import("@/components/PdfViewer"), {
+  ssr: false,
+  loading: () => (
+    <div className="flex h-full items-center justify-center text-xs text-neutral-500">
+      Loading viewer…
+    </div>
+  ),
+});
 import type { EndpointTestResult, JobProgress, RecentJob, TranslationSettings } from "@/lib/types";
 
 const SETTINGS_STORAGE_KEY = "pdf-translator:settings";
@@ -53,6 +63,8 @@ export default function Page() {
   const [testing, setTesting] = useState(false);
   const [testResult, setTestResult] = useState<EndpointTestResult | null>(null);
   const [recent, setRecent] = useState<RecentJob[]>([]);
+  const [gotoPage, setGotoPage] = useState<number | null>(null);
+  const [loadOpen, setLoadOpen] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
@@ -333,6 +345,53 @@ export default function Page() {
           >
             <Languages className="h-4 w-4" /> Translate
           </button>
+          <div className="relative">
+            <button
+              onClick={() => { setLoadOpen((v) => !v); if (!loadOpen) loadRecent(); }}
+              className="flex items-center gap-2 rounded-md bg-neutral-700 px-3 py-1.5 text-xs font-medium text-white hover:bg-neutral-600"
+            >
+              <FolderOpen className="h-4 w-4" /> Load
+            </button>
+            {loadOpen && (
+              <>
+                <div className="fixed inset-0 z-10" onClick={() => setLoadOpen(false)} />
+                <div className="absolute right-0 z-20 mt-1 max-h-80 w-72 overflow-auto rounded-lg border border-neutral-700 bg-neutral-900 py-1 shadow-xl">
+                  {recent.length === 0 && (
+                    <div className="px-3 py-2 text-xs text-neutral-500">No saved jobs</div>
+                  )}
+                  {recent.map((j) => (
+                    <button
+                      key={j.jobId}
+                      onClick={() => {
+                        loadRecentJob(j);
+                        setLoadOpen(false);
+                      }}
+                      className="flex w-full items-center justify-between gap-2 border-b border-neutral-800/50 px-3 py-2 text-left text-xs hover:bg-neutral-800 last:border-0"
+                    >
+                      <span className="min-w-0 flex-1 truncate text-neutral-200">{j.fileName}</span>
+                      <span className="shrink-0 text-neutral-500">
+                        {j.source}→{j.target}
+                      </span>
+                      <span
+                        className={
+                          "shrink-0 " +
+                          (j.status === "completed"
+                            ? "text-emerald-400"
+                            : j.status === "failed"
+                              ? "text-rose-400"
+                              : j.status === "cancelled"
+                                ? "text-amber-400"
+                                : "text-neutral-500")
+                        }
+                      >
+                        {j.status}
+                      </span>
+                    </button>
+                  ))}
+                </div>
+              </>
+            )}
+          </div>
         </div>
       </header>
 
@@ -471,7 +530,7 @@ export default function Page() {
             {fileName && <span className="truncate text-neutral-500">· {fileName}</span>}
           </div>
           <div className="min-h-0 flex-1">
-            <PdfViewer jobId={jobId} fileName={fileName} />
+            <PdfViewer jobId={jobId} fileName={fileName} gotoPage={gotoPage} />
           </div>
         </div>
         <div className="flex min-h-0 flex-col">
@@ -482,7 +541,7 @@ export default function Page() {
             )}
           </div>
           <div className="min-h-0 flex-1">
-            <MarkdownViewer markdown={markdown} />
+            <MarkdownViewer markdown={markdown} onPageClick={setGotoPage} />
           </div>
         </div>
       </section>
