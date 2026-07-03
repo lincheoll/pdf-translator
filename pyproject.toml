@@ -1,0 +1,8 @@
+[project]
+name = "pdf-translator-ocr"
+version = "0.1.0"
+description = "OCR page rendering helpers for pdf-translator"
+requires-python = ">=3.10"
+dependencies = [
+    "pymupdf>=1.24.0",
+]

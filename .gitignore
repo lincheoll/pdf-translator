@@ -1,23 +1,45 @@
+# dependencies
 node_modules
+.pnp
+.pnp.js
+
+# next.js
 .next
 out
 dist
 
 # env
 .env
-.env.local
-.env*.local
+.env.*
+!.env.example
 
-# our local data (uploads, outputs, job history) — never commit
-data
+# local runtime data (uploads, outputs, job history)
+data/
 
 # typescript
 *.tsbuildinfo
 next-env.d.ts
 
-# misc
+# python (OCR script)
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+
+# testing / coverage
+coverage/
+
+# deploy
+.vercel
+
+# os / editor
 .DS_Store
+Thumbs.db
 *.log
 npm-debug.log*
 yarn-debug.log*
 pnpm-debug.log*
+.idea/
+.vscode/
+*.swp
+*.swo

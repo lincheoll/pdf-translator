@@ -3,7 +3,7 @@
 
 Usage: python3 pdf_render.py <pdf_path> <page_number_1indexed> [dpi]
 
-Requires PyMuPDF: pip install pymupdf
+Requires PyMuPDF via uv: uv sync
 """
 import sys
 import base64
